@@ -1,11 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function DriverRegistration() {
   const router = useRouter();
   const [formData, setFormData] = useState({
+    email: '',
+    password: '',
     licenseNumber: '',
     vehicleNumber: '',
     vehicleType: '',
@@ -16,6 +18,26 @@ export default function DriverRegistration() {
       insurance: ''
     }
   });
+
+  useEffect(() => {
+    // Fetch current user's email when component mounts
+    const fetchUserProfile = async () => {
+      try {
+        const response = await fetch('/api/user/profile');
+        if (response.ok) {
+          const userData = await response.json();
+          setFormData(prev => ({
+            ...prev,
+            email: userData.email
+          }));
+        }
+      } catch (error) {
+        console.error('Failed to fetch user profile:', error);
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,6 +68,28 @@ export default function DriverRegistration() {
       <div className="max-w-md mx-auto">
         <h2 className="text-3xl font-bold text-center mb-8">Driver Registration</h2>
         <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-lg shadow">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Email</label>
+            <input
+              type="email"
+              disabled
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-gray-100"
+              value={formData.email}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Password for Driver Account</label>
+            <input
+              type="password"
+              required
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+              value={formData.password}
+              onChange={(e) => setFormData({...formData, password: e.target.value})}
+              placeholder="Enter password for driver account"
+            />
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700">License Number</label>
             <input

@@ -6,6 +6,15 @@ const DriverSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
+  email: {
+    type: String,
+    required: [true, 'Please provide email'],
+    unique: true
+  },
+  password: {
+    type: String,
+    required: [true, 'Please provide password']
+  },
   licenseNumber: {
     type: String,
     required: [true, 'Please provide license number'],

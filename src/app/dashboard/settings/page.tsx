@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 export default function Settings() {
   const router = useRouter();
   const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     fetchUserData();
@@ -32,39 +33,65 @@ export default function Settings() {
     }
   };
 
-  const handleBecomeDriver = () => {
-    router.push('/driver/register');
+  const handleBecomeDriver = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/driver/check-status');
+      const data = await response.json();
+      
+      if (data.isDriver) {
+        router.push('/driver/login');
+      } else {
+        router.push('/driver/register');
+      }
+    } catch (error) {
+      console.error('Failed to check driver status:', error);
+      router.push('/driver/register');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 text-black">
-      {/* Profile Section */}
-      <div className="bg-white p-4 flex items-center space-x-4 border-b">
-        <div className="w-16 h-16 bg-gray-300 rounded-full overflow-hidden">
-          <div className="w-full h-full flex items-center justify-center text-gray-600">
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
+    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      {isLoading && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-4 rounded-lg shadow-lg text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+            <p className="mt-2 text-gray-600">Checking driver status...</p>
           </div>
         </div>
-        <div>
-          <h2 className="text-xl font-semibold">{user?.name || 'Loading...'}</h2>
-          <p className="text-gray-600">{user?.phone || 'Loading...'}</p>
+      )}
+
+      <div className="max-w-md mx-auto">
+        <h2 className="text-3xl font-bold text-center mb-8">Settings</h2>
+        {/* Profile Section */}
+        <div className="bg-white p-4 flex items-center space-x-4 border-b">
+          <div className="w-16 h-16 bg-gray-300 rounded-full overflow-hidden">
+            <div className="w-full h-full flex items-center justify-center text-gray-600">
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </div>
+          </div>
+          <div>
+            <h2 className="text-xl font-semibold">{user?.name || 'Loading...'}</h2>
+            <p className="text-gray-600">{user?.phone || 'Loading...'}</p>
+          </div>
         </div>
-      </div>
 
-      {/* Become Driver Button */}
-      <div className="p-4">
-        <button
-          onClick={handleBecomeDriver}
-          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
-        >
-          Become a Driver
-        </button>
-      </div>
+        {/* Become Driver Button */}
+        <div className="p-4">
+          <button
+            onClick={handleBecomeDriver}
+            disabled={isLoading}
+            className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
+            {isLoading ? 'Checking...' : 'Become a Driver'}
+          </button>
+        </div>
 
-      {/* Rest of the settings options... */}
-      <div className="mt-4">
+        {/* Rest of the settings options... */}
         <div className="bg-white">
           {/* Account Settings */}
           <div className="p-4 border-b">

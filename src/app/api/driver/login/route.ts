@@ -2,12 +2,11 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Driver from '@/models/Driver';
 import User from '@/models/User';
-import bcrypt from 'bcryptjs';
 
 export async function POST(request: Request) {
   try {
     await dbConnect();
-    const { licenseNumber, password } = await request.json();
+    const { licenseNumber } = await request.json();
 
     const driver = await Driver.findOne({ licenseNumber, status: 'approved' })
       .populate('userId');
@@ -19,26 +18,16 @@ export async function POST(request: Request) {
       );
     }
 
-    const user = driver.userId;
-    const isValid = await bcrypt.compare(password, user.password);
-
-    if (!isValid) {
-      return NextResponse.json(
-        { message: 'Invalid password' },
-        { status: 401 }
-      );
-    }
-
-    // Create session cookie with proper configuration
-    const response = NextResponse.json({ success: true });
+    // Create session cookie
+    const response = NextResponse.json({ message: 'Login successful' });
     response.cookies.set({
       name: 'session',
-      value: user._id.toString(),
+      value: driver.userId._id.toString(),
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax', // Changed from 'strict' to 'lax' for better compatibility
+      secure: true,
+      sameSite: 'lax',
       path: '/',
-      maxAge: 60 * 60 * 24 // 24 hours instead of 10 minutes
+      maxAge: 24 * 60 * 60 // 24 hours
     });
 
     return response;

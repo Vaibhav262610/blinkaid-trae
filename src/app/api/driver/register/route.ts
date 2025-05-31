@@ -35,9 +35,11 @@ export async function POST(request: Request) {
       );
     }
 
-    // Create new driver application
+    // Create new driver application with user's email and password
     const driver = await Driver.create({
       userId: user._id,
+      email: user.email,  // Add user's email
+      password: user.password,  // Add user's password
       licenseNumber: data.licenseNumber,
       vehicleNumber: data.vehicleNumber,
       vehicleType: data.vehicleType,
@@ -50,7 +52,6 @@ export async function POST(request: Request) {
       { message: 'Application submitted successfully', driver },
       { status: 201 }
     );
-
   } catch (error) {
     console.error('Driver registration error:', error);
     return NextResponse.json(
